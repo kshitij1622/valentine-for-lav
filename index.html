@@ -10,28 +10,32 @@
         :root { --primary: #ff4d6d; --secondary: #ffb3c1; --bg: #fff0f3; }
         body { font-family: 'Poppins', sans-serif; background-color: var(--bg); margin: 0; overflow: hidden; display: flex; justify-content: center; align-items: center; height: 100vh; }
         
-        /* Floating Hearts Background */
         .heart { position: absolute; color: var(--primary); opacity: 0.5; animation: float 6s linear infinite; z-index: -1; }
         @keyframes float { 0% { transform: translateY(100vh) rotate(0deg); opacity: 1; } 100% { transform: translateY(-10vh) rotate(360deg); opacity: 0; } }
 
-        .card { background: white; padding: 2.5rem; border-radius: 30px; box-shadow: 0 15px 35px rgba(255, 77, 109, 0.2); width: 90%; max-width: 450px; text-align: center; z-index: 10; border: 2px solid var(--secondary); }
+        .card { background: white; padding: 2.5rem; border-radius: 30px; box-shadow: 0 15px 35px rgba(255, 77, 109, 0.2); width: 90%; max-width: 450px; text-align: center; z-index: 10; border: 2px solid var(--secondary); position: relative; }
         h1 { font-family: 'Dancing Script', cursive; color: var(--primary); font-size: 2.5rem; margin-top: 0; }
         
         #sentence-box { font-size: 1.4rem; min-height: 2rem; margin-bottom: 20px; color: #555; background: #fff8f9; padding: 15px; border-radius: 15px; border: 1px dashed var(--primary); }
         .word-reveal { display: inline-block; color: var(--primary); font-weight: 600; margin: 0 5px; animation: bounceIn 0.8s; }
         
-        #question-text { font-size: 1.1rem; font-weight: 600; color: #333; margin-bottom: 20px; }
+        #question-text { font-size: 1.1rem; font-weight: 600; color: #333; margin-bottom: 20px; line-height: 1.5; }
         
         .options-grid { display: grid; gap: 12px; }
-        .option-btn { background: white; border: 2px solid var(--secondary); padding: 12px; border-radius: 15px; cursor: pointer; transition: all 0.3s; font-size: 1rem; color: #444; font-family: 'Poppins', sans-serif; }
+        .option-btn { background: white; border: 2px solid var(--secondary); padding: 12px; border-radius: 15px; cursor: pointer; transition: all 0.3s; font-size: 1rem; color: #444; font-family: 'Poppins', sans-serif; position: relative; }
         .option-btn:hover { background: var(--secondary); color: white; transform: translateY(-2px); }
         .option-btn.correct { background: #38b000; border-color: #38b000; color: white; animation: pulse 0.5s; }
         .option-btn.wrong { background: #ff4d6d; border-color: #ff4d6d; color: white; animation: shakeX 0.5s; }
+
+        /* Final Buttons */
+        .final-btns { display: flex; gap: 20px; justify-content: center; margin-top: 20px; }
+        #no-btn { position: relative; transition: all 0.2s ease; z-index: 999; }
+        #yes-btn { background-color: #38b000; color: white; border: none; padding: 15px 30px; border-radius: 15px; font-size: 1.2rem; cursor: pointer; }
     </style>
 </head>
 <body>
 
-<div class="card animate__animated animate__fadeInUp">
+<div class="card animate__animated animate__fadeInUp" id="main-card">
     <h1 id="header">Unlock My Heart</h1>
     <div id="sentence-box">
         <span id="sentence-content">Questions remaining: 5</span>
@@ -41,12 +45,11 @@
 </div>
 
 <script>
-    // --- EDIT YOUR QUESTIONS HERE ---
     const gameData = [
-        { q: "Where was our first date?", options: ["Starbucks", "The Park", "The Cinema", "Mcdonalds"], a: "Starbucks", word: "Will" },
-        { q: "What is my favorite nickname for you?", options: ["Honey", "Princess", "Sweetie", "Angel"], a: "Honey", word: "you" },
-        { q: "What month did we meet?", options: ["January", "June", "August", "December"], a: "June", word: "be" },
-        { q: "What is my favorite color on you?", options: ["Red", "Black", "Blue", "White"], a: "Red", word: "my" },
+        { q: "Where did i meet you? (Trick Question)", options: ["Your house", "My House", "School", "New York"], a: "School", word: "Will" },
+        { q: "What is my favorite nickname for you?", options: ["pari", "Lavanya", "Paru Betu", "Nonu"], a: "Paru Betu", word: "you" },
+        { q: "What month did we meet?", options: ["January", "June", "July", "August"], a: "July", word: "be" },
+        { q: "What are you doing on friday?", options: ["Merko Pyaar", "Merko aur zyada Pyaar", "No pyaar for me", "Saara pyaar sirf merko milega"], a: "Saara pyaar sirf merko milega", word: "my" },
         { q: "Who loves you the most in the world?", options: ["Me", "Your Dog", "Your Mom", "Me (Pick this one)"], a: "Me (Pick this one)", word: "valentine?" }
     ];
 
@@ -85,7 +88,7 @@
                 container.appendChild(btn);
             });
         } else {
-            showFinal();
+            showDetectionScreen();
         }
     }
 
@@ -107,11 +110,57 @@
         content.innerHTML = revealedWords.map(w => `<span class="word-reveal">${w}</span>`).join(" ");
     }
 
-    function showFinal() {
-        document.getElementById('header').innerText = "For My Forever Valentine";
-        document.getElementById('question-text').innerHTML = "I have a question for you in person... ❤️";
-        document.getElementById('options-container').innerHTML = "💍";
-        document.getElementById('options-container').style.fontSize = "3rem";
+    // --- PHASE 1 FINAL: Detection ---
+    function showDetectionScreen() {
+        const card = document.getElementById('main-card');
+        card.classList.add('animate__animated', 'animate__bounceOut');
+        
+        setTimeout(() => {
+            card.classList.remove('animate__bounceOut');
+            card.classList.add('animate__bounceIn');
+            document.getElementById('sentence-box').style.display = 'none';
+            document.getElementById('header').innerText = "System Alert ⚠️";
+            document.getElementById('question-text').innerHTML = "Scanning... <br><b>Detection Complete:</b> <br>You are officially the love of Kshitij's life!";
+            document.getElementById('options-container').innerHTML = `<button class="option-btn" onclick="showFinalProposal()">Proceed</button>`;
+        }, 800);
+    }
+
+    // --- PHASE 2 FINAL: The Proposal & Dodging Button ---
+    function showFinalProposal() {
+        const card = document.getElementById('main-card');
+        card.classList.add('animate__animated', 'animate__pulse');
+        
+        document.getElementById('header').innerText = "One Last Thing...";
+        document.getElementById('question-text').innerHTML = "Will you be my Valentine? ❤️";
+        
+        document.getElementById('options-container').innerHTML = `
+            <div class="final-btns">
+                <button id="yes-btn" onclick="celebrate()">YES!</button>
+                <button id="no-btn" class="option-btn">No</button>
+            </div>
+        `;
+
+        const noBtn = document.getElementById('no-btn');
+        
+        // The Magic: Dodge logic
+        const moveBtn = () => {
+            const x = Math.random() * (window.innerWidth - noBtn.offsetWidth) - (window.innerWidth / 2 - noBtn.offsetWidth);
+            const y = Math.random() * (window.innerHeight - noBtn.offsetHeight) - (window.innerHeight / 2 - noBtn.offsetHeight);
+            noBtn.style.transform = `translate(${x}px, ${y}px)`;
+        };
+
+        noBtn.addEventListener('mouseover', moveBtn);
+        noBtn.addEventListener('touchstart', (e) => { e.preventDefault(); moveBtn(); });
+    }
+
+    function celebrate() {
+        document.getElementById('main-card').innerHTML = `
+            <h1 class="animate__animated animate__heartBeat animate__infinite">YAYYYYY! ❤️</h1>
+            <p>I knew you couldn't say no! <br> I love you so much!</p>
+            <div style="font-size: 4rem;">💍🌹</div>
+        `;
+        // Add extra hearts
+        setInterval(createHearts, 100);
     }
 
     initGame();
