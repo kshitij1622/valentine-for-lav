@@ -3,71 +3,118 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>A Special Surprise</title>
+    <title>A Special Surprise ❤️</title>
+    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
     <style>
-        body { font-family: 'Arial', sans-serif; background-color: #fff0f3; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; text-align: center; }
-        .card { background: white; padding: 2rem; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); width: 90%; max-width: 400px; }
-        h1 { color: #ff4d6d; }
-        #word-display { font-size: 1.2rem; margin-bottom: 20px; color: #555; min-height: 1.5rem; font-weight: bold; }
-        input { padding: 10px; width: 80%; border: 2px solid #ffb3c1; border-radius: 10px; outline: none; margin-bottom: 10px; }
-        button { background-color: #ff4d6d; color: white; border: none; padding: 10px 20px; border-radius: 10px; cursor: pointer; font-weight: bold; }
-        button:hover { background-color: #c9184a; }
-        .success { color: #38b000; font-weight: bold; }
+        :root { --primary: #ff4d6d; --secondary: #ffb3c1; --bg: #fff0f3; }
+        body { font-family: 'Poppins', sans-serif; background-color: var(--bg); margin: 0; overflow: hidden; display: flex; justify-content: center; align-items: center; height: 100vh; }
+        
+        /* Floating Hearts Background */
+        .heart { position: absolute; color: var(--primary); opacity: 0.5; animation: float 6s linear infinite; z-index: -1; }
+        @keyframes float { 0% { transform: translateY(100vh) rotate(0deg); opacity: 1; } 100% { transform: translateY(-10vh) rotate(360deg); opacity: 0; } }
+
+        .card { background: white; padding: 2.5rem; border-radius: 30px; box-shadow: 0 15px 35px rgba(255, 77, 109, 0.2); width: 90%; max-width: 450px; text-align: center; z-index: 10; border: 2px solid var(--secondary); }
+        h1 { font-family: 'Dancing Script', cursive; color: var(--primary); font-size: 2.5rem; margin-top: 0; }
+        
+        #sentence-box { font-size: 1.4rem; min-height: 2rem; margin-bottom: 20px; color: #555; background: #fff8f9; padding: 15px; border-radius: 15px; border: 1px dashed var(--primary); }
+        .word-reveal { display: inline-block; color: var(--primary); font-weight: 600; margin: 0 5px; animation: bounceIn 0.8s; }
+        
+        #question-text { font-size: 1.1rem; font-weight: 600; color: #333; margin-bottom: 20px; }
+        
+        .options-grid { display: grid; gap: 12px; }
+        .option-btn { background: white; border: 2px solid var(--secondary); padding: 12px; border-radius: 15px; cursor: pointer; transition: all 0.3s; font-size: 1rem; color: #444; font-family: 'Poppins', sans-serif; }
+        .option-btn:hover { background: var(--secondary); color: white; transform: translateY(-2px); }
+        .option-btn.correct { background: #38b000; border-color: #38b000; color: white; animation: pulse 0.5s; }
+        .option-btn.wrong { background: #ff4d6d; border-color: #ff4d6d; color: white; animation: shakeX 0.5s; }
     </style>
 </head>
 <body>
 
-<div class="card">
-    <h1 id="header">Valentine's Quiz ❤️</h1>
-    <div id="word-display">Sentence: <span id="sentence">_ _ _ _ _</span></div>
-    <p id="question-text">Loading question...</p>
-    <input type="text" id="answer-input" placeholder="Type answer here...">
-    <br>
-    <button onclick="checkAnswer()">Submit</button>
-    <p id="feedback"></p>
+<div class="card animate__animated animate__fadeInUp">
+    <h1 id="header">Unlock My Heart</h1>
+    <div id="sentence-box">
+        <span id="sentence-content">Questions remaining: 5</span>
+    </div>
+    <p id="question-text">Loading...</p>
+    <div id="options-container" class="options-grid"></div>
 </div>
 
 <script>
+    // --- EDIT YOUR QUESTIONS HERE ---
     const gameData = [
-        { q: "Where was our very first date?", a: "starbucks", word: "Will" },
-        { q: "What is my favorite nickname for you?", a: "honey", word: "you" },
-        { q: "What month did we meet?", a: "june", word: "be" },
-        { q: "What is my favorite color?", a: "blue", word: "my" },
-        { q: "Last one: Who loves you the most?", a: "you", word: "valentine?" }
+        { q: "Where was our first date?", options: ["Starbucks", "The Park", "The Cinema", "Mcdonalds"], a: "Starbucks", word: "Will" },
+        { q: "What is my favorite nickname for you?", options: ["Honey", "Princess", "Sweetie", "Angel"], a: "Honey", word: "you" },
+        { q: "What month did we meet?", options: ["January", "June", "August", "December"], a: "June", word: "be" },
+        { q: "What is my favorite color on you?", options: ["Red", "Black", "Blue", "White"], a: "Red", word: "my" },
+        { q: "Who loves you the most in the world?", options: ["Me", "Your Dog", "Your Mom", "Me (Pick this one)"], a: "Me (Pick this one)", word: "valentine?" }
     ];
 
     let currentStep = 0;
-    let revealedSentence = [];
+    let revealedWords = [];
+
+    function initGame() {
+        createHearts();
+        loadQuestion();
+    }
+
+    function createHearts() {
+        for(let i=0; i<15; i++) {
+            let heart = document.createElement('div');
+            heart.className = 'heart';
+            heart.innerHTML = '❤️';
+            heart.style.left = Math.random() * 100 + 'vw';
+            heart.style.animationDuration = (Math.random() * 3 + 3) + 's';
+            heart.style.fontSize = (Math.random() * 20 + 10) + 'px';
+            document.body.appendChild(heart);
+        }
+    }
 
     function loadQuestion() {
         if (currentStep < gameData.length) {
-            document.getElementById('question-text').innerText = gameData[currentStep].q;
-            document.getElementById('answer-input').value = "";
-            document.getElementById('feedback').innerText = "";
+            const data = gameData[currentStep];
+            document.getElementById('question-text').innerText = data.q;
+            const container = document.getElementById('options-container');
+            container.innerHTML = '';
+            
+            data.options.forEach(opt => {
+                const btn = document.createElement('button');
+                btn.className = 'option-btn animate__animated animate__fadeIn';
+                btn.innerText = opt;
+                btn.onclick = () => checkAnswer(opt, btn);
+                container.appendChild(btn);
+            });
         } else {
-            document.getElementById('header').innerText = "Happy Valentine's Day!";
-            document.getElementById('question-text').innerText = "I love you! ❤️";
-            document.getElementById('answer-input').style.display = "none";
-            document.querySelector('button').style.display = "none";
+            showFinal();
         }
     }
 
-    function checkAnswer() {
-        const userAns = document.getElementById('answer-input').value.toLowerCase().trim();
-        const correctAns = gameData[currentStep].a.toLowerCase();
-
-        if (userAns === correctAns) {
-            revealedSentence.push(gameData[currentStep].word);
-            document.getElementById('sentence').innerText = revealedSentence.join(" ");
+    function checkAnswer(selected, btn) {
+        if (selected === gameData[currentStep].a) {
+            btn.classList.add('correct');
+            revealedWords.push(gameData[currentStep].word);
+            updateSentence();
             currentStep++;
-            document.getElementById('feedback').innerHTML = "<span class='success'>Correct!</span>";
             setTimeout(loadQuestion, 1000);
         } else {
-            document.getElementById('feedback').innerText = "Try again, beautiful! 😘";
+            btn.classList.add('wrong');
+            setTimeout(() => btn.classList.remove('wrong'), 500);
         }
     }
 
-    loadQuestion();
+    function updateSentence() {
+        const content = document.getElementById('sentence-content');
+        content.innerHTML = revealedWords.map(w => `<span class="word-reveal">${w}</span>`).join(" ");
+    }
+
+    function showFinal() {
+        document.getElementById('header').innerText = "For My Forever Valentine";
+        document.getElementById('question-text').innerHTML = "I have a question for you in person... ❤️";
+        document.getElementById('options-container').innerHTML = "💍";
+        document.getElementById('options-container').style.fontSize = "3rem";
+    }
+
+    initGame();
 </script>
 </body>
 </html>
